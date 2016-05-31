@@ -18,6 +18,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import uyun.common.snmp.entity.*;
 import uyun.common.snmp.error.ErrorUtil;
 import uyun.common.snmp.error.SnmpException;
+import uyun.common.snmp.util.SpeedController;
 
 import java.io.IOException;
 import java.util.*;

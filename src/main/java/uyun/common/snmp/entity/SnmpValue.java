@@ -59,7 +59,7 @@ public class SnmpValue {
 			return value.toString();
 	}
 
-	public SnmpOID getOid() {
+	public SnmpOID toOid() {
 		if (value instanceof OID)
 			return new SnmpOID((OID) value);
 		else
@@ -106,7 +106,7 @@ public class SnmpValue {
 	 * @return 返回转换后的文本
 	 * @throws IllegalArgumentException 如果值非OctetString类型，则弹出此异常
 	 */
-	public String getText() throws IllegalArgumentException {
+	public String toText() throws IllegalArgumentException {
 		if (value instanceof OctetString) {
 			byte[] datas = ((OctetString) value).getValue();
 			if (datas.length == 0)
@@ -120,7 +120,7 @@ public class SnmpValue {
 			return value.toString();
 	}
 
-	public String getMac() {
+	public String toMac() {
 		return value.toString();
 	}
 
@@ -130,7 +130,7 @@ public class SnmpValue {
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
-	public byte[] getBytes() throws IllegalArgumentException {
+	public byte[] toBytes() throws IllegalArgumentException {
 		if (value instanceof OctetString)
 			return ((OctetString) value).getValue();
 		throw new IllegalArgumentException("值[" + value + "]非字符串类型.");
@@ -142,7 +142,7 @@ public class SnmpValue {
 	 * @return 返回转换后的IP，以192.168.0.0的形式表示
 	 * @throws IllegalArgumentException 如果值非OctetString类型且长度不为4，则弹出此异常
 	 */
-	public String getIp() throws IllegalArgumentException {
+	public String toIp() throws IllegalArgumentException {
 		if (value instanceof OctetString) {
 			byte[] datas = ((OctetString) value).getValue();
 			if (datas.length == 4)
@@ -159,7 +159,7 @@ public class SnmpValue {
 	 * @return 数值
 	 * @throws NumberFormatException 如果snmp值类型非数字类型，不可转换，则弹出此异常
 	 */
-	public long getLong() throws NumberFormatException {
+	public long toLong() throws NumberFormatException {
 		if (value == null)
 			throw new NumberFormatException("采集结果值为空.");
 
@@ -179,7 +179,7 @@ public class SnmpValue {
 		}
 	}
 
-	public int getInt() throws NumberFormatException {
+	public int toInteger() throws NumberFormatException {
 		if (value == null)
 			throw new NumberFormatException("采集结果值为空.");
 

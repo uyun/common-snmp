@@ -1,4 +1,4 @@
-package uyun.common.snmp;
+package uyun.common.snmp.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,11 @@ public class SpeedController {
 		try {
 			pro.load(new FileInputStream(file));
 		} catch (FileNotFoundException e) {
-			logger.debug(String.format("加载Snmp发包配置信息出错。错误：文件[%s]不存在", file));
-			logger.debug("堆栈：", e);
+			logger.trace(String.format("加载Snmp发包配置信息出错。错误：文件[%s]不存在", file));
+			logger.trace("堆栈：", e);
 		} catch (IOException e) {
-			logger.warn(String.format("加载Snmp发包配置信息出错。错误：%s", e));
-			logger.debug("堆栈：", e);
+			logger.trace(String.format("加载Snmp发包配置信息出错。错误：%s", e));
+			logger.trace("堆栈：", e);
 		}
 		defaultTime = getTimeByIp("0.0.0.0", defaultTime);
 		isBatchDef = isBatch("0.0.0.0", isBatchDef);

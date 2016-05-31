@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>
+				%d{yy-MM-dd HH:mm:ss.SSS} %-5level [%logger{36}] %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<root>
+		<level value="INFO"/>
+		<appender-ref ref="stdout"/>
+	</root>
+
+	<logger name="uyun" level="DEBUG"/>
+</configuration>
