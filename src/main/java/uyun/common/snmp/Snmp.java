@@ -379,6 +379,7 @@ public class Snmp {
 
 		// 遍历所有实例
 		SnmpOID currInstance = null;
+		int sameRetry = 0;
 		while (true) {
 			// 设置当前实例与所需要请求的列OID
 			j = 0;
@@ -402,8 +403,15 @@ public class Snmp {
 				if (columns[j].isChild(ret[j].getOid()))
 					break;
 			}
-			if (j >= requests.length)    // 当前获取的表格数据，没有一个是当前需要的
-				break;
+			if (j >= requests.length)  {  // 当前获取的表格数据，没有一个是当前需要的
+				sameRetry++;
+				if (sameRetry <= param.getAllowRepeatTime())
+					continue;
+				else
+					break;
+			} else
+				sameRetry = 0;
+
 			currInstance = ret[j].getOid().suboid(columns[j].length());
 			for (j = 0; j < requests.length; j++)
 				requests[j] = SnmpOID.join(columns[j], currInstance);
@@ -424,7 +432,7 @@ public class Snmp {
 				if (m >= ret.length) {
 					try {
 						SnmpVarBind tryRet = get(param, requests[j]);
-						if (!tryRet.getValue().isNull()) {
+						if (tryRet.getValue() != null && !tryRet.getValue().isNull()) {
 							row.set(j, tryRet);
 							continue;
 						}
@@ -493,7 +501,7 @@ public class Snmp {
 				if (m >= ret.length) {
 					try {
 						SnmpVarBind tryRet = get(param, requests[j]);
-						if (!tryRet.getValue().isNull()) {
+						if (tryRet.getValue() != null && !tryRet.getValue().isNull()) {
 							row.set(j, tryRet);
 							continue;
 						}

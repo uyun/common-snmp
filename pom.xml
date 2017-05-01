@@ -38,6 +38,17 @@
 		</repository>
 	</repositories>
 
+	<distributionManagement>
+		<repository>
+			<id>uyun-release</id>
+			<url>http://www.uyunsoft.cn/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>uyun-snapshot</id>
+			<url>http://www.uyunsoft.cn/nexus/content/repositories/snapshot/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<dependencies>
 		<!-- logs -->
 		<dependency>
