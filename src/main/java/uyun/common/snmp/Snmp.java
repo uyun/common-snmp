@@ -621,15 +621,15 @@ public class Snmp {
 				}
 			}
 
-			if (param.getSecurityLevel().equals(SecurityLevel.authNoPriv)) {
+			if (param.getSecurityLevel().getLevel() == SecurityLevel.authNoPriv.getSnmpValue()) {
 				snmp.getUSM().addUser(user,
 						new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), null, null));
-			} else if (param.getSecurityLevel().equals(SecurityLevel.authPriv)) {
+			} else if (param.getSecurityLevel().getLevel() == SecurityLevel.authPriv.getSnmpValue()) {
 				snmp.getUSM().addUser(
 						user,
 						new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), param
 								.getPrivProtocol().getOID(), new OctetString(param.getPrivPassword())));
-			} else if (param.getSecurityLevel().equals(SecurityLevel.noAuthNoPriv)) {
+			} else if (param.getSecurityLevel().getLevel() == SecurityLevel.noAuthNoPriv.getSnmpValue()) {
 				snmp.getUSM().addUser(
 						user,
 						new UsmUser(user, null, null, null, null));
