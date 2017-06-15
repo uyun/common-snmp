@@ -24,6 +24,10 @@ public class SnmpException extends Exception {
 	 * IO通信错误，可能是套接字被占用等操作失败
 	 */
 	public static int ERR_IOERROR = 3;
+	/**
+	 * SNMP V3相关的参数错误
+	 */
+	public static int ERR_V3_PARAM_ERROR = 4;
 
 	private int errorCode;
 

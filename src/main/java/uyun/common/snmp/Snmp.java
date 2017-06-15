@@ -10,10 +10,7 @@ import org.snmp4j.mp.MPv3;
 import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.security.SecurityLevel;
 import org.snmp4j.security.*;
-import org.snmp4j.smi.Address;
-import org.snmp4j.smi.GenericAddress;
-import org.snmp4j.smi.OctetString;
-import org.snmp4j.smi.VariableBinding;
+import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import uyun.common.snmp.entity.*;
 import uyun.common.snmp.error.ErrorUtil;
@@ -41,6 +38,7 @@ public class Snmp {
 	 */
 	private static SpeedController controller;
 	private static RemoveableUSM usm;
+	private static OID SNMPV3_USM_STATS = new OID(".1.3.6.1.6.3.15.1.1");
 
 	/**
 	 * 调用此对象时，进行初始化。如果初始化失败，需要弹出RuntimeException异常。主程序捕捉到此异常的话，应该退出处理
@@ -80,9 +78,13 @@ public class Snmp {
 		for (int i = 0; i < 3; i++) {
 			try {
 				ResponseEvent event = snmp.send(pdu, param.getTarget());
-				if (event != null && event.getResponse() != null)
+				if (event != null && event.getResponse() != null) {
+					if (param.getVersion() == SnmpVersion.V3
+							&& event.getResponse().getVariableBindings().size() == 1
+							&& event.getResponse().getVariableBindings().get(0).getOid().startsWith(SNMPV3_USM_STATS))
+						throw new SnmpException(SnmpException.ERR_V3_PARAM_ERROR, "Snmp V3 parameter error");
 					return event.getResponse();
-				else if (pdu.getType() == PDU.TRAP)
+				} else if (pdu.getType() == PDU.TRAP)
 					return null;
 				else
 					throw new SnmpException(SnmpException.ERR_TIMEOUT, "SNMP操作超时，请确认目标IP[" + param.getIp() + "]可以访问且Snmp相关配置正确");
@@ -615,25 +617,24 @@ public class Snmp {
 				} else {
 					entry.target = param.clone();
 					for (UsmUserEntry uue : entry.entries) {
-						System.out.println("remove: " + this.removeUser(uue.getEngineID(), uue.getUserName()));
+						this.removeAllUsers(uue.getUserName());
+						logger.debug("remove: {}", uue);
 					}
 					entry.entries.clear();
 				}
 			}
 
+			UsmUser usm;
 			if (param.getSecurityLevel().getLevel() == SecurityLevel.authNoPriv.getSnmpValue()) {
-				snmp.getUSM().addUser(user,
-						new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), null, null));
+				usm = new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), null, null);
 			} else if (param.getSecurityLevel().getLevel() == SecurityLevel.authPriv.getSnmpValue()) {
-				snmp.getUSM().addUser(
-						user,
-						new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), param
-								.getPrivProtocol().getOID(), new OctetString(param.getPrivPassword())));
-			} else if (param.getSecurityLevel().getLevel() == SecurityLevel.noAuthNoPriv.getSnmpValue()) {
-				snmp.getUSM().addUser(
-						user,
-						new UsmUser(user, null, null, null, null));
+				usm = new UsmUser(user, param.getAuthProtocol().getOID(), new OctetString(param.getAuthPassword()), param
+								.getPrivProtocol().getOID(), new OctetString(param.getPrivPassword()));
+			}  else {
+				usm = new UsmUser(user, null, null, null, null);
 			}
+			logger.debug("add: {}", usm);
+			snmp.getUSM().addUser(user, usm);
 		}
 
 		@Override
