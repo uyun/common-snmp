@@ -315,21 +315,35 @@ public class Snmp {
 	 */
 	public static SnmpVarBind[] walk(SnmpTarget param, SnmpOID request)
 			throws SnmpException {
+		return walk(param, SnmpWalkRequest.DEFAULT, request).getData();
+	}
+
+	/**
+	 * 对指定的request oid进行walk子树操作
+	 * @param param   SNMP基本访问参数
+	 * @param request SNMPWALK请求参数
+	 * @param root SNMPWALK的根OID
+	 * @return 返回walk成功的整个数据，按walk顺序排列。超时则返回null
+	 * @throws SnmpException 当发现下列情况时弹出：Snmp操作错误
+	 */
+	public static SnmpWalkResult<SnmpVarBind[]> walk(SnmpTarget param, SnmpWalkRequest request, SnmpOID root) throws SnmpException {
+		long start = System.currentTimeMillis();
 		SnmpOID[] requests = new SnmpOID[1];
 		ArrayList<SnmpVarBind> results = new ArrayList<SnmpVarBind>();
 		SnmpVarBind[] ret;
 		int repeatCount = 0;
 
 		//如果oid最后一位是0，直接使用get获得结果: NCC-1143
-		if (request.oid().last() == 0) {
-			SnmpVarBind r = get(param, request);
+		if (root.oid().last() == 0) {
+			SnmpVarBind r = get(param, root);
 			if (r.getValue() == null)
-				return new SnmpVarBind[]{};
+				return new SnmpWalkResult(new SnmpVarBind[]{});
 			else
-				return new SnmpVarBind[]{r};
+				return new SnmpWalkResult(new SnmpVarBind[]{r});
 		}
 
-		requests[0] = request;
+		SnmpWalkResult.State state = SnmpWalkResult.State.OK;
+		requests[0] = root;
 		while (true) {
 			try {
 				ret = getNext(param, requests);
@@ -345,7 +359,7 @@ public class Snmp {
 				throw new SnmpException(SnmpException.ERR_SNMPOPER,
 						"getNext不应返回多个结果。");
 
-			if (request.isChild(ret[0].getOid())) {
+			if (root.isChild(ret[0].getOid())) {
 				// 如果OID重复超出次数
 				if (ret[0].getOid().equals(requests[0])) {
 					repeatCount++;
@@ -359,9 +373,18 @@ public class Snmp {
 				requests[0] = ret[0].getOid();
 			} else
 				break;
+
+			if (request.getMaxLength() > 0 && results.size() >= request.getMaxLength()) {
+				state = SnmpWalkResult.State.EXCEED;
+				break;
+			}
+			if (request.getTimeout() > 0 && System.currentTimeMillis() - start > request.getTimeout()) {
+				state = SnmpWalkResult.State.OVERTIME;
+				break;
+			}
 		}
 
-		return (SnmpVarBind[]) results.toArray(new SnmpVarBind[0]);
+		return new SnmpWalkResult(state, (SnmpVarBind[]) results.toArray(new SnmpVarBind[0]));
 	}
 
 	/**
@@ -374,6 +397,18 @@ public class Snmp {
 	 */
 	public static SnmpTable walkTable(SnmpTarget param, SnmpOID[] columns)
 			throws SnmpException {
+		return walkTable(param, SnmpWalkRequest.DEFAULT, columns).getData();
+	}
+
+	/**
+	 * 获取指定的列集的完整表格
+	 * @param param snmp基本参数
+	 * @param request walk请求参数
+	 * @param columns walk表格请求列OID
+	 * @return
+	 */
+	public static SnmpWalkResult<SnmpTable> walkTable(SnmpTarget param, SnmpWalkRequest request, SnmpOID[] columns) throws SnmpException {
+		long start = System.currentTimeMillis();
 		SnmpTable table = new SnmpTable(columns);
 		SnmpOID[] requests = new SnmpOID[columns.length];
 		SnmpVarBind[] ret;
@@ -382,6 +417,7 @@ public class Snmp {
 		// 遍历所有实例
 		SnmpOID currInstance = null;
 		int sameRetry = 0;
+		SnmpWalkResult.State state = SnmpWalkResult.State.OK;
 		while (true) {
 			// 设置当前实例与所需要请求的列OID
 			j = 0;
@@ -452,11 +488,21 @@ public class Snmp {
 			}
 
 			// 如果行顺利分析完成，包括有不完整行，但param允许保留不完整行
-			if (j >= requests.length)
+			if (j >= requests.length) {
 				table.addRow(row);
+				if (request.getMaxLength() > 0 && table.getRows().size() >= request.getMaxLength()) {
+					state = SnmpWalkResult.State.EXCEED;
+					break;
+				}
+			}
+
+			if (request.getTimeout() > 0 && System.currentTimeMillis() - start > request.getTimeout()) {
+				state = SnmpWalkResult.State.OVERTIME;
+				break;
+			}
 		}
 
-		return table;
+		return new SnmpWalkResult(state, table);
 	}
 
 	/**
