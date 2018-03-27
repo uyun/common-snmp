@@ -233,6 +233,8 @@ public class Snmp {
 		if (ret.getErrorStatus() != 0) {
 			if (ret.getErrorStatus() == 2)
 				return sendBatchStepByStep(pduType, param, requests);
+			else if (ret.getErrorStatus() == SnmpException.ERR_ENDOFMIB)
+				throw new SnmpException(SnmpException.ERR_ENDOFMIB, "SNMP请求获取失败：EndOfMib");
 			else
 				throw new SnmpException(SnmpException.ERR_SNMPOPER,
 						"SNMP请求获取失败：" + ret.getErrorStatusText());
@@ -349,11 +351,12 @@ public class Snmp {
 				ret = getNext(param, requests);
 			} catch (SnmpException e) {
 				//如果超时并且尚未获得的数据，或者继续循环
-				if (e.getErrorCode() == SnmpException.ERR_TIMEOUT && results.size() > 0) {
+				if (e.getErrorCode() == SnmpException.ERR_TIMEOUT && results.size() > 0)
 					break;
-				} else {
+				else if (e.getErrorCode() == SnmpException.ERR_ENDOFMIB)
+					break;
+				else
 					throw e;
-				}
 			}
 			if (ret.length > 1)
 				throw new SnmpException(SnmpException.ERR_SNMPOPER,

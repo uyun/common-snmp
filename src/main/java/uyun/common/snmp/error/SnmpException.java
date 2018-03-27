@@ -11,23 +11,27 @@ public class SnmpException extends Exception {
 	/**
 	 * 未知错误
 	 */
-	public static int ERR_UNKNOWN = 0;
+	public static final int ERR_UNKNOWN = 0;
 	/**
 	 * 操作超时
 	 */
-	public static int ERR_TIMEOUT = 1;
+	public static final int ERR_TIMEOUT = 1;
 	/**
 	 * 操作错误，多为目标设备可以访问，但具体OID返回异常
 	 */
-	public static int ERR_SNMPOPER = 2;
+	public static final int ERR_SNMPOPER = 2;
 	/**
 	 * IO通信错误，可能是套接字被占用等操作失败
 	 */
-	public static int ERR_IOERROR = 3;
+	public static final int ERR_IOERROR = 3;
 	/**
 	 * SNMP V3相关的参数错误
 	 */
-	public static int ERR_V3_PARAM_ERROR = 4;
+	public static final int ERR_V3_PARAM_ERROR = 4;
+	/**
+	 * SNMP采集到MIB结尾时的错误消息
+	 */
+	public static final int ERR_ENDOFMIB = 130;
 
 	private int errorCode;
 
