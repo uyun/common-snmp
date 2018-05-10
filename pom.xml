@@ -6,7 +6,7 @@
 
 	<groupId>uyun</groupId>
 	<artifactId>common-snmp</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
@@ -23,6 +23,23 @@
 				</excludes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>jacoco-initialize</id>
+						<goals><goal>prepare-agent</goal></goals>
+					</execution>
+					<execution>
+						<id>jacoco-test</id>
+						<phase>test</phase>
+						<goals><goal>report</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 	<repositories>
@@ -50,6 +67,11 @@
 	</distributionManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.1.0</version>
+		</dependency>
 		<!-- logs -->
 		<dependency>
 			<groupId>org.slf4j</groupId>

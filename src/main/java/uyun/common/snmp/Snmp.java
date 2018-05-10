@@ -433,7 +433,17 @@ public class Snmp {
 			}
 
 			// GET请求
-			ret = getNext(param, requests);
+			try {
+				ret = getNext(param, requests);
+			} catch (SnmpException e) {
+				//如果超时并且尚未获得的数据，或者继续循环
+				if (e.getErrorCode() == SnmpException.ERR_TIMEOUT && table.getRows().size() > 0)
+					break;
+				else if (e.getErrorCode() == SnmpException.ERR_ENDOFMIB)
+					break;
+				else
+					throw e;
+			}
 
 			// 分析建立行
 			if (ret.length == 0)
