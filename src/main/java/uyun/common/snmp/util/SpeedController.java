@@ -6,13 +6,12 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class SpeedController {
 	private static final Logger logger = LoggerFactory.getLogger(SpeedController.class);
+	private static final String KEY_PREFIX_IS_BATCH = "isBatch.";
+	private static final String KEY_PREFIX_SNMP_INTERVAL = "snmp.interval.";
 
 	private static SpeedController inst = new SpeedController();
 	private Properties pro = null;
@@ -32,8 +31,32 @@ public class SpeedController {
 			logger.trace(String.format("加载Snmp发包配置信息出错。错误：%s", e));
 			logger.trace("堆栈：", e);
 		}
+
+		fillFromSystemProperties();
+
+		if (logger.isDebugEnabled())
+			logProperties();
+
 		defaultTime = getTimeByIp("0.0.0.0", defaultTime);
 		isBatchDef = isBatch("0.0.0.0", isBatchDef);
+	}
+
+	private void logProperties() {
+		logger.debug("snmp.properties.count = \t{}", pro.size());
+		for (Map.Entry<Object, Object> entry : pro.entrySet()) {
+			logger.debug("snmp.properties.{} = \t{}", entry.getKey(), entry.getValue());
+		}
+	}
+
+	private void fillFromSystemProperties() {
+		Enumeration<?> keys = System.getProperties().propertyNames();
+		while (keys.hasMoreElements()) {
+			String key = keys.nextElement().toString();
+			if (key.startsWith(KEY_PREFIX_IS_BATCH))
+				pro.put(key, System.getProperty(key));
+			else if (key.startsWith(KEY_PREFIX_SNMP_INTERVAL))
+				pro.put(key.substring(KEY_PREFIX_SNMP_INTERVAL.length()), System.getProperty(key));
+		}
 	}
 
 	public static SpeedController getInstance() {
@@ -78,7 +101,7 @@ public class SpeedController {
 	private boolean isBatch(String ip, boolean bol) {
 		if (pro != null) {
 			try {
-				Object value = pro.get("isBatch." + ip);
+				Object value = pro.get(KEY_PREFIX_IS_BATCH + ip);
 				if (value == null)
 					return bol;
 				return Boolean.parseBoolean(value.toString());

@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestSnmp {
 	private SnmpTarget createTarget() {
-		return new SnmpTarget("10.1.1.1", "public");
+		return new SnmpTarget("10.1.1.1", "broadapublic");
 	}
 
 	@Test
@@ -84,13 +84,14 @@ public class TestSnmp {
 	}
 
 	public static void main(String[] args) throws SnmpException {
-//		SnmpTarget target = new SnmpTarget("10.1.1.50", "broadapublic");
-//		target.setAllowRepeatTime(2);
-//		SnmpOID[] table = new SnmpOID[]{
-//				new SnmpOID(".1.3.6.1.2.1.17.4.3.1.2"),
-//				new SnmpOID(".1.3.6.1.2.1.17.4.3.1.3")
-//		};
-//		System.out.println(Snmp.walkTable(target, table).getRows().size());
+		System.setProperty("snmp.interval.0.0.0.0", "10");
+		SnmpTarget target = new SnmpTarget("10.1.1.50", "broadapublic");
+		target.setAllowRepeatTime(2);
+		SnmpOID[] table = new SnmpOID[]{
+				new SnmpOID(".1.3.6.1.2.1.17.4.3.1.2"),
+				new SnmpOID(".1.3.6.1.2.1.17.4.3.1.3")
+		};
+		System.out.println(Snmp.walkTable(target, table).getRows().size());
 
 //		SnmpTarget target = new SnmpTarget("10.1.1.50", SecurityLevel.authPriv, "uyunuser", AuthProtocol.SHA, "uyun1234", PrivProtocol.DES, "uyundes1");
 //		System.out.println(Arrays.toString(Snmp.walk(target, new SnmpOID(".1.3.6.1.2.1.1"))));
